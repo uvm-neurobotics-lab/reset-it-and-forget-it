@@ -1,0 +1,22 @@
+#
+# Config for i.i.d. transfer learning of Classifier-Baseline models on Mini-ImageNet. Initializes final layer with LLS,
+# then fine-tunes all layers.
+#
+
+# Dataset
+dataset: miniimagenet
+train_examples: [30, 500]
+test_examples: 100
+
+# Test Method
+eval_method: iid
+reinit_method: lstsq
+reinit_params: classifier.linear
+init_size: 0  # use one example per class to init
+opt_params: all
+classes: 20
+batch_size: 64
+lr: !include learning-rates.yml
+
+# Reporting
+eval_freq: 3

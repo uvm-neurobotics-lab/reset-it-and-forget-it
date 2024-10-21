@@ -1,0 +1,14 @@
+#
+# Config for continual meta-test of OML-like models on Mini-ImageNet. Fine-tunes the last two layers.
+#
+
+# Dataset
+dataset: miniimagenet
+train_examples: [10, 20, 30]
+test_examples: 200
+
+# Test Method
+reinit_params: pn.2
+opt_params: pn
+classes: 20
+lr: !include learning-rates.yml

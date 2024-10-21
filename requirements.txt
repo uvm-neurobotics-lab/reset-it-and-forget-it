@@ -1,0 +1,9 @@
+gdown
+higher
+pandas
+pyyaml
+pyyaml-include
+scikit-learn
+torchvision
+tqdm
+wandb
