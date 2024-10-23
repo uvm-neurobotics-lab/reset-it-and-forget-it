@@ -8,13 +8,16 @@ framework.
 
 # Overview
 
-The "training" of a few-shots meta-learned model like ANML consists of:
-- train-train: the model is shown a random (initially new) task, i.e. 20 chars from one Omniglot class (a.k.a. learning phase)
-- train-test: the model is tested on the last task it has just trained on and a sample of 64 random images from all the classes (a.k.a. remembering phase)
-- test-train: at test time the model is shown a few examples (15) of a new class not seen during train-train. Labels are also provided and the model is asked to quickly learn this new class without forgetting (for 600 the learning sequence is 9000 gradient updates long)
-- test-test: after learning from the few-shots the model performance is evaluated on the holdout examples.
+The training of a few-shot meta-learned model like ANML consists of:
+  1. Pre-train: the model is pre-trained. This can consist of:
+      - (Meta-)ASB: repeated episodes of sequential learning, followed by batch learning.
+      - Standard Mini-Batch i.i.d. Training
+  2. Evaluation (Deployment/Transfer): The model is transferred to a new set of classes which do not exist in the training set.
+     At this stage, we also have multiple options:
+      - Continual Transfer: The model is trained on the new classes one-image-at-a-time. Classes are ordered sequentially and no example is seen twice.
+      - Standard Transfer: The model is transferred to the new classes using standard fine-tuning on batches of data.
 
-The code for these phases can be found inside [this](anml.py) file, and can be launched via [train_anml.py](train_anml.py).
+The code for these phases can be found inside [anml.py](anml.py) or [iid.py](iid.py). Refer to the sections below for how to run.
 
 # Prerequisites
 
@@ -60,21 +63,23 @@ This file should be manually kept in sync when new dependencies are added.
 We do not currently support `pipenv` because this author could not get it to install PyTorch correctly.
 But if you get a working `Pipfile` please do contribute!
 
-# Training
+# Pre-Training
 
-Phase       | Trained    |  Optimizer  | LR
- ---------- | ---------  | ----------  | -----
- inner loop | rln + fc   | SGD         | 0.1
- outer loop | everything | Adam        | 0.003
+Pre-training can be performed using `train_anml.py` or `train_iid.py`. The setup can be specified via config file, and
+some variables can also be overridden on the command line. Consider the differences between the following configs to
+gain an overview of how to edit the config file.
 
-Training can be performed using
+**NOTE:** These commands will automatically log the training via Weights & Biases unless explicitly disabled.
 
-```
-python train_omni.py
-``` 
-flags can be provided for exploring different setups.
+ - To train a setup equivalent to OML: `python train_anml.py -c configs/train-omni-oml.yml`.
+ - To train a setup equivalent to ANML: `python train_anml.py -c configs/train-omni-anml.yml`.
+ - To train our Meta-ASB on Omniglot (ANML minus the neuromodulation): `python train_anml.py -c configs/train-omni-sanml.yml`.
+ - To train our ASB (here called `seqep` for "Sequential Episodic") on Omniglot: `python train_anml.py -c configs/train-omni-seqep-sanml.yml`.
+ - To train using standard i.i.d. (using Adam) on Omniglot: `python train_anml.py -c configs/train-omni-iid-sanml.yml`.
+   - To add zapping once every epoch during i.i.d. training, change `lobo_rate` to `1`.
+   - You can specify any other optimizer available in PyTorch. See [optimization.py](optimization.py).
 
-# Evaluation
+# Evaluation (Transfer)
 ![evaluation results](evaluation_results.png)
 
 Number of tasks | Accuracy | Eval LR
@@ -91,7 +96,7 @@ Number of tasks | Accuracy | Eval LR
 Evaluation can be performed using
 
 ```bash
-python eval_omni.py --model trained_anmls/256_112_2304_ANML-29999.pth --classes 10 --lr 0.00085 --runs 10
+python eval_anml.py -c configs/eval-omni-anml.yml --model trained_anmls/256_112_2304_ANML-29999.pth
 ```
 
 During evaluation the model is quite sensitive to learning rates used, the data shown in the above table has been gathered sweeping several learning rates over multiple repeats.
