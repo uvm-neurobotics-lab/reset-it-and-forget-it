@@ -75,7 +75,7 @@ gain an overview of how to edit the config file.
  - To train a setup equivalent to ANML: `python train_anml.py -c configs/train-omni-anml.yml`.
  - To train our Meta-ASB on Omniglot (ANML minus the neuromodulation): `python train_anml.py -c configs/train-omni-sanml.yml`.
  - To train our ASB (here called `seqep` for "Sequential Episodic") on Omniglot: `python train_anml.py -c configs/train-omni-seqep-sanml.yml`.
- - To train using standard i.i.d. (using Adam) on Omniglot: `python train_anml.py -c configs/train-omni-iid-sanml.yml`.
+ - To train using standard i.i.d. (using Adam) on Omniglot: `python train_iid.py -c configs/train-omni-iid-sanml.yml`.
    - To add zapping once every epoch during i.i.d. training, change `lobo_rate` to `1`.
    - You can specify any other optimizer available in PyTorch. See [optimization.py](optimization.py).
 
